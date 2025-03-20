@@ -1,0 +1,121 @@
+Hard Level(23-03-25)
+
+import java.sql.*;
+import java.util.Scanner;
+
+// Model Class
+class Student {
+    int studentID;
+    String name;
+    String department;
+    int marks;
+
+    public Student(int studentID, String name, String department, int marks) {
+        this.studentID = studentID;
+        this.name = name;
+        this.department = department;
+        this.marks = marks;
+    }
+}
+
+// Controller Class
+class StudentController {
+    private Connection con;
+
+    public StudentController(String url, String user, String password) throws SQLException {
+        con = DriverManager.getConnection(url, user, password);
+    }
+
+    public void addStudent(Student student) throws SQLException {
+        String query = "INSERT INTO Student (StudentID, Name, Department, Marks) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement ps = con.prepareStatement(query)) {
+            ps.setInt(1, student.studentID);
+            ps.setString(2, student.name);
+            ps.setString(3, student.department);
+            ps.setInt(4, student.marks);
+            ps.executeUpdate();
+            System.out.println("Student Added Successfully.");
+        }
+    }
+
+    public void displayStudents() throws SQLException {
+        String query = "SELECT * FROM Student";
+        try (Statement stmt = con.createStatement(); ResultSet rs = stmt.executeQuery(query)) {
+            System.out.println("StudentID\tName\tDepartment\tMarks");
+            while (rs.next()) {
+                System.out.println(rs.getInt("StudentID") + "\t" + rs.getString("Name") + "\t" + rs.getString("Department") + "\t" + rs.getInt("Marks"));
+            }
+        }
+    }
+
+    public void updateStudent(int studentID, int marks) throws SQLException {
+        String query = "UPDATE Student SET Marks = ? WHERE StudentID = ?";
+        try (PreparedStatement ps = con.prepareStatement(query)) {
+            ps.setInt(1, marks);
+            ps.setInt(2, studentID);
+            int rows = ps.executeUpdate();
+            if (rows > 0) {
+                System.out.println("Student Updated Successfully.");
+            } else {
+                System.out.println("Student Not Found.");
+            }
+        }
+    }
+
+    public void deleteStudent(int studentID) throws SQLException {
+        String query = "DELETE FROM Student WHERE StudentID = ?";
+        try (PreparedStatement ps = con.prepareStatement(query)) {
+            ps.setInt(1, studentID);
+            int rows = ps.executeUpdate();
+            if (rows > 0) {
+                System.out.println("Student Deleted Successfully.");
+            } else {
+                System.out.println("Student Not Found.");
+            }
+        }
+    }
+}
+
+// Main Class (View)
+public class JDBCExample {
+    public static void main(String[] args) {
+        String url = "jdbc:mysql://localhost:3306/your_database";
+        String user = "root";
+        String password = "password";
+
+        try {
+            StudentController controller = new StudentController(url, user, password);
+            Scanner scanner = new Scanner(System.in);
+
+            while (true) {
+                System.out.println("1. Add Student 2. View Students 3. Update Student 4. Delete Student 5. Exit");
+                int choice = scanner.nextInt();
+
+                switch (choice) {
+                    case 1:
+                        System.out.print("Enter StudentID, Name, Department, Marks: ");
+                        Student student = new Student(scanner.nextInt(), scanner.next(), scanner.next(), scanner.nextInt());
+                        controller.addStudent(student);
+                        break;
+                    case 2:
+                        controller.displayStudents();
+                        break;
+                    case 3:
+                        System.out.print("Enter StudentID to update and new Marks: ");
+                        controller.updateStudent(scanner.nextInt(), scanner.nextInt());
+                        break;
+                    case 4:
+                        System.out.print("Enter StudentID to delete: ");
+                        controller.deleteStudent(scanner.nextInt());
+                        break;
+                    case 5:
+                        return;
+                    default:
+                        System.out.println("Invalid Choice!");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}

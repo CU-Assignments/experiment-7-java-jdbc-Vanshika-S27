@@ -1,0 +1,24 @@
+Easy Level(23-03-25)
+
+import java.sql.*;
+import java.util.Scanner;
+
+public class JDBCExample {
+    public static void main(String[] args) {
+        String url = "jdbc:mysql://localhost:3306/your_database";
+        String user = "root";
+        String password = "password";
+
+        try (Connection con = DriverManager.getConnection(url, user, password);
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT * FROM Employee")) {
+
+            System.out.println("EmpID\tName\tSalary");
+            while (rs.next()) {
+                System.out.println(rs.getInt("EmpID") + "\t" + rs.getString("Name") + "\t" + rs.getDouble("Salary"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}

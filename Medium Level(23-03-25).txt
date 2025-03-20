@@ -1,0 +1,77 @@
+Medium Level(23-03-25)
+
+import java.sql.*;
+import java.util.Scanner;
+
+public class JDBCExample {
+    public static void main(String[] args) {
+        String url = "jdbc:mysql://localhost:3306/your_database";
+        String user = "root";
+        String password = "password";
+
+        try (Connection con = DriverManager.getConnection(url, user, password)) {
+            Scanner scanner = new Scanner(System.in);
+            while (true) {
+                System.out.println("1. Create 2. Read 3. Update 4. Delete 5. Exit");
+                int choice = scanner.nextInt();
+
+                switch (choice) {
+                    case 1: // Create
+                        System.out.print("Enter ProductID, ProductName, Price, Quantity: ");
+                        int id = scanner.nextInt();
+                        String name = scanner.next();
+                        double price = scanner.nextDouble();
+                        int quantity = scanner.nextInt();
+
+                        String insertQuery = "INSERT INTO Product (ProductID, ProductName, Price, Quantity) VALUES (?, ?, ?, ?)";
+                        try (PreparedStatement ps = con.prepareStatement(insertQuery)) {
+                            ps.setInt(1, id);
+                            ps.setString(2, name);
+                            ps.setDouble(3, price);
+                            ps.setInt(4, quantity);
+                            ps.executeUpdate();
+                            System.out.println("Record Inserted.");
+                        }
+                        break;
+                    case 2: // Read
+                        String selectQuery = "SELECT * FROM Product";
+                        try (Statement stmt = con.createStatement(); ResultSet rs = stmt.executeQuery(selectQuery)) {
+                            System.out.println("ProductID\tProductName\tPrice\tQuantity");
+                            while (rs.next()) {
+                                System.out.println(rs.getInt("ProductID") + "\t" + rs.getString("ProductName") + "\t" + rs.getDouble("Price") + "\t" + rs.getInt("Quantity"));
+                            }
+                        }
+                        break;
+                    case 3: // Update
+                        System.out.print("Enter ProductID to update and new Price: ");
+                        int updateId = scanner.nextInt();
+                        double newPrice = scanner.nextDouble();
+                        String updateQuery = "UPDATE Product SET Price = ? WHERE ProductID = ?";
+                        try (PreparedStatement ps = con.prepareStatement(updateQuery)) {
+                            ps.setDouble(1, newPrice);
+                            ps.setInt(2, updateId);
+                            ps.executeUpdate();
+                            System.out.println("Record Updated.");
+                        }
+                        break;
+                    case 4: // Delete
+                        System.out.print("Enter ProductID to delete: ");
+                        int deleteId = scanner.nextInt();
+                        String deleteQuery = "DELETE FROM Product WHERE ProductID = ?";
+                        try (PreparedStatement ps = con.prepareStatement(deleteQuery)) {
+                            ps.setInt(1, deleteId);
+                            ps.executeUpdate();
+                            System.out.println("Record Deleted.");
+                        }
+                        break;
+                    case 5: // Exit
+                        return;
+                    default:
+                        System.out.println("Invalid Choice!");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
